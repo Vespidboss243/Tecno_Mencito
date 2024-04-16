@@ -6,8 +6,10 @@ from selenium.webdriver.support import expected_conditions as EC
 import pandas as pd
 
 
+#Abre el navegador y descarga el excel
+
 options = webdriver.ChromeOptions()
-prefs = {"download.default_directory":r"C:\Users\alfam\OneDrive\Documentos\Trabajito\WEB"}  #ruta de descarga del excel
+prefs = {"download.default_directory":r"C:\Users\alfam\OneDrive\Documentos\Trabajito\WEB"}  #ruta de descarga del excel esto se cuadrara en el futuro
 options.add_experimental_option("prefs", prefs)
 driver = webdriver.Chrome(options=options)
 driver.get("https://sicep.xm.com.co/public-announcements")
@@ -16,8 +18,10 @@ time.sleep(2)
 excel = driver.find_element(By.ID,'btnexportexcel')
 excel.click()
 time.sleep(8)
-#Analisis del Excel
-#data = pd.read_excel(r"C:\Users\RYZEN\Documents\Programacion\Trabajito\Proyectos\WEB\ConvocatoriasPublicas.xlsx")
+
+
+#Filtra los datos
+
 data = pd.read_excel("ConvocatoriasPublicas.xlsx")
 data=data.drop(["ExclusivaFNCER","FechaSuspension","FechaReactivacion","FechaCancelacion","FechaCierreConvocatoria"],axis=1)
 data = data.query('Estado == "Cerrada y adjudicada"')
@@ -28,6 +32,9 @@ fecha_inicio = pd.to_datetime(fecha_inicio, format='%d/%m/%Y')
 data = data[data['FechaLimiteRecepcionOfertas'] >= fecha_inicio]
 listaCodigos= data['CodigoConvocatoria'].tolist()
 #print(listaCodigos)
+
+#empieza a iterar por cada codigo de convocatoria
+
 dataframes = []
 for codigo in listaCodigos:
   driver.get("https://sicep.xm.com.co/public-announcements")
@@ -66,6 +73,9 @@ for codigo in listaCodigos:
   div_productos = driver.find_elements(By.CLASS_NAME,"ui-g-3.detcolumnProd.clickbutton.ng-star-inserted")
   time.sleep(1)
   ProductosExcel = pd.DataFrame()
+  
+  #itera por cada producto de la convocatoria
+
   Productos = []
   for producto in div_productos:
 
@@ -79,6 +89,8 @@ for codigo in listaCodigos:
     Textos = MenuProducto.find_elements(By.TAG_NAME,"P")
     FechaInicio= Textos[len(Textos)-5].text
     FechaFinal= Textos[len(Textos)-3].text
+
+    #los organiza en un dataframe
 
     InfoProductos.append(codigo)
     InfoProductos.append(comprador)
@@ -100,6 +112,8 @@ for codigo in listaCodigos:
   columnas = ['Convocatoria','Comprador', 'Producto', 'FechaInicio','FechaFinal','FechaOfertas','FechaAudencia','PrecioReserva']
   InfoAños= pd.DataFrame(Productos,columns=columnas)
   #print(InfoAños)
+
+  #Extrae el precio promedio adjudicado de cada producto
 
   MenuConvo = MenuDesple[6]
   MenuConvo.click()
@@ -133,6 +147,8 @@ for codigo in listaCodigos:
   dataframes.append(ProductosDefinitivo)
   time.sleep(2)
 
+
+#crea un excel con todos los productos
 
 ProductosExcel = pd.concat(dataframes, ignore_index=True)  
 ProductosExcel.to_excel('ProductosDefinitivos2.xlsx')
