@@ -5,7 +5,7 @@ class Connection():
 
     def __init__(self):
         try:
-            self.conn = psycopg.connect("dbname=santafe user=vespidboss password=trajemark6 host=localhost port=5432")
+            self.conn = psycopg.connect("dbname=##### user=##### password=##### host=#### port=####")
 
         except psycopg.OperationalError as err:
             print(err)
